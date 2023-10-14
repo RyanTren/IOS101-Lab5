@@ -7,20 +7,42 @@ import UIKit
 import Nuke
 
 // TODO: Add table view data source conformance
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        print("🍏 numberOfRowsInSection called with movies count: \(movies.count)")
+        return movies.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
+        let movie = movies[indexPath.row]
+        
+        if let posterPath = movie.poster_path,
+           let imageUrl = URL(string: "https://image.tmdb.org/t/p/w500" + posterPath){
+            Nuke.loadImage(with: imageUrl, into: cell.posterImageView)
+        }
+        cell.titleLabel.text = movie.title
+        cell.overviewLabel.text = movie.overview
+        return cell
+    }
+    
 
 
     // TODO: Add table view outlet
 
-
+    @IBOutlet weak var tableView: UITableView!
+    
     // TODO: Add property to store fetched movies array
 
-
+    private var movies: [Movie] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // TODO: Assign table view data source
-
+        
+        tableView.dataSource = self
 
         fetchMovies()
     }
@@ -67,7 +89,14 @@ class ViewController: UIViewController {
 
                 // Run any code that will update UI on the main thread.
                 DispatchQueue.main.async { [weak self] in
+                    
+                    self?.movies = movies
+                    self?.tableView.reloadData()
 
+                    
+                    print("🍏 Fetched and stored \(movies.count) movies")
+
+                    
                     // We have movies! Do something with them!
                     print("✅ SUCCESS!!! Fetched \(movies.count) movies")
 
